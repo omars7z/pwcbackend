@@ -5,8 +5,6 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import AuditReport
 from groq import Groq
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-
 @csrf_exempt
 def run_audit(request):
     if request.method == 'POST':
@@ -16,6 +14,10 @@ def run_audit(request):
 
             if not document:
                 return JsonResponse({'error': 'No document provided.'}, status=400)
+            groq_api_key = os.getenv("GROQ_API_KEY")
+            if not groq_api_key:
+                return JsonResponse({'error': 'GROQ_API_KEY is not configured.'}, status=500)
+            client = Groq(api_key=groq_api_key)
 
             # 1. Instruct the AI on how to behave (The System Prompt)
             system_instruction = (
